@@ -1,8 +1,15 @@
 #!/usr/bin/env python
 
+'''
+author: Daniele Faugiana
+last update: October the 20th 2012 
+version: 0.1
+'''
+
 import tweepy
 from time import sleep
 from auth import startAuth
+from os import path
 
 #Authorize this application
 api = startAuth()
@@ -10,13 +17,27 @@ api = startAuth()
 #Get yourself's object
 myself = api.me()
 
+#This function gets the last 1000 tweets given a user
+def getTweets():
+	print 'Write the name of the user you want to get tweets from'
+	user = raw_input()
+	print 'Getting tweets...'
+	tweets = []
+	for result in tweepy.cursor.Cursor(api.user_timeline,include_rts=True,screen_name=user).items():
+		tweets = tweets + [result]
+	return tweets
+
+
 #This functions gets the people an user follows given his id
 def getFollowing(userID):
 	
 	following = []
 	for result in tweepy.cursor.Cursor(api.friends,id=userID).items():
 		following = following + [result]
+		
 	return following
+
+
 
 #This functions gets the people who follows an user given his id
 def getFollowers(userID):
@@ -25,6 +46,8 @@ def getFollowers(userID):
 	for result in tweepy.cursor.Cursor(api.followers,id=userID).items():
 		following = following + [result]
 	return following
+
+
 
 
 #It checks differences between followings and followers	
@@ -60,12 +83,16 @@ def matchFollowers(user,otherUser=myself):
 	return [common,unCommon]
 
 
-#It simple defollows an user
+
+
+#It simple UNfollows an user
 def defollow(user):
 	api.destroy_friendship(user.id)
 	return
 	
 
+
+#Shows people who don't follow you and asks for unfollowing 
 def checkMatch():
 	print 'Wait for followers/following scan \n'
 	matches = matchFollowers(myself)
@@ -92,12 +119,12 @@ def checkMatch():
 	
 	for i in matches[1]:
 		print ''
-		print 'Do you want to defollow', i.screen_name,'?'
-		print 'Type "d" to defollow, "x" to exit, any other to ignore'
+		print 'Do you want to unfollow', i.screen_name,'?'
+		print 'Type "u" to unfollow, "x" to exit, any other to ignore'
 		answer = raw_input()
 		if answer == 'd':
 			defollow(i)
-			print i.screen_name,' has been defollowed \n'
+			print i.screen_name,' has been unfollowed \n'
 		elif answer=='exit':
 			break
 		else:
@@ -105,6 +132,8 @@ def checkMatch():
 			
 	print 'All operations done'			
 
+
+#Sends a DM to all your followers
 def massDM():
 	#It gets all your followers, first.
 	print 'Searching followers...'
@@ -134,12 +163,35 @@ def massDM():
 	print 'PythonBird could not send '+str(countUnsent)+' DMs\n'
 	return
 	
-	
-		
-		
-	
 
-if __name__=="__main__":
+#Saves a tweets list on a text file
+def fileSaveTweets(tweetsList):
+	lenght = len(tweetsList)
+	user = tweetsList[0].user
+	name = user.screen_name
+	thisPath = path.abspath(__file__)
+	thisPath = path.dirname(thisPath)
+	tweetsFile = open('tweets.txt','w') #Create a file
+	tweets = []
+	print 'Writing file...\n'
+	errors = 0
+	for tweet in tweetsList:
+		try:
+			tweets = tweets + [str(tweet.text)+'\n\n']
+		except:
+			errors += 1
+			pass
+	tweetsFile.write('THESE ARE '+name+' LAST ' +str(lenght-errors)+' TWEETS\n')
+	tweetsFile.write('===============================\n')
+	tweetsFile.writelines(tweets)
+	tweetsFile.close()
+	print 'PB has been unable to save '+str(errors)+' tweets\n'
+	print str(lenght-errors)+' tweets have been saved\n'
+	print 'File has been saved in '+str(thisPath)+'/tweet.txt\n'
+	return 	
+
+def begin():
+	
 	begin = 'R'
 	print '\n'
 	print '=================================================='
@@ -149,19 +201,26 @@ if __name__=="__main__":
 	print 'Hello', myself.screen_name
 	print '______________________________________________'
 	while(begin is 'R'):
-		print 'Do you want to unfollow (u) or mass-DM (m)?'
+		print 'Do you want to unfollow (u), mass-DM (m) or save tweets(t)?'
 		answer = raw_input()
-		while (not ((answer is 'u') or (answer is 'm'))):
-			print 'Bad choice, try again: u = unfollow, m = mass-DM'
+		while (not ((answer is 'u') or (answer is 'm') or (answer is 't'))):
+			print 'Bad choice, try again: u = unfollow, m = mass-DM, t = save tweets'
 			answer = raw_input()
 	
 		if answer is 'u':
 			checkMatch()
 		elif answer is 'm':
 			massDM()
+		elif answer is 't':
+			timeline = getTweets()
+			fileSaveTweets(timeline)
+			
 		
 		print 'Type R to restart, X to exit'
 		begin = raw_input()
-
+	return
 		
+
+if __name__=="__main__":
+	begin()
 	

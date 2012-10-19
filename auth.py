@@ -1,4 +1,10 @@
-#!/usr/bin/python
+#!/usr/bin/env python
+
+'''
+author: Daniele Faugiana
+last update: October the 20th 2012 
+version: 0.1
+'''
 
 import os 
 import tweepy
