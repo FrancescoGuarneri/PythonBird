@@ -125,7 +125,7 @@ def checkMatch():
 		if answer == 'd':
 			defollow(i)
 			print i.screen_name,' has been unfollowed \n'
-		elif answer=='exit':
+		elif answer=='x':
 			break
 		else:
 			print 'Next... \n'
