@@ -16,6 +16,7 @@ def startAuth():
     #Firstly check if CK and CS are available
     if ((not CONSUMER_KEY) or (not CONSUMER_SECRET)):
         print 'CCK ERROR, KEYS ARE NOT AVAILABLE ANYMORE'
+        print 'Please, register a new app on Twitter Developers'
     
     #If available, it starts a new OAuth handler
     auth = tweepy.OAuthHandler(CONSUMER_KEY,CONSUMER_SECRET)
